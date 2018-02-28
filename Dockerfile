@@ -8,7 +8,7 @@ RUN echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup \
     && echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages \
     && echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes
 
-COPY debconf.txt /tmp
+COPY etc/debconf.txt /tmp
 
 RUN debconf-set-selections < /tmp/debconf.txt
 
@@ -25,7 +25,7 @@ RUN \
        locale-gen en_GB.UTF-8 en_US.UTF-8 \
     && update-locale LANG=en_GB.UTF-8 LC_COLLATE=C
 
-COPY /etc/zsh/zsh* /etc/zsh/
+COPY etc/zsh/zsh* /etc/zsh/
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/02_sudo_nopasswd
 

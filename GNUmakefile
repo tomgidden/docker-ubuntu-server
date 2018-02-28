@@ -1,13 +1,14 @@
 TAG=tomgidden/ubuntu-server
 ME?=me
 CONTAINER?=ubuntu-server
+HOMEDIR?=`pwd`
 
 # From https://github.com/solita/docker-systemd/issues/1#issuecomment-218190399
 TWEAKS=--cap-add SYS_ADMIN --security-opt seccomp=unconfined --stop-signal=SIGRTMIN+3 --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro
 
 KEYFILE=home/$(ME)/.ssh/authorized_keys
 
-all:
+all: run shell
 
 clean:
 	-docker kill $(CONTAINER)
@@ -22,11 +23,11 @@ copy_ssh:
 #	cp ~/.ssh/id_ed25519.pub $(KEYFILE)
 #	cp ~/.ssh/id_ed25519_docker.pub $(KEYFILE)
 
-build: Dockerfile debconf.txt
+build: Dockerfile etc/debconf.txt etc/zsh/zshenv etc/zsh/zshrc
 	docker build . --build-arg user=$(ME) -t $(TAG)
 
 run:
-	docker run --rm --name $(CONTAINER) $(TWEAKS) -d -p 8022:22 -v `pwd`/home:/home $(TAG)
+	docker run --rm --name $(CONTAINER) $(TWEAKS) -d -p 8022:22 -v $(HOMEDIR):/home/$(ME) $(TAG)
 
 shell:
 	docker exec -it -u $(ME) $(CONTAINER) zsh
