@@ -27,7 +27,7 @@ build: Dockerfile etc/debconf.txt etc/zsh/zshenv etc/zsh/zshrc
 	docker build . --build-arg user=$(ME) -t $(TAG)
 
 run:
-	docker run --rm --name $(CONTAINER) $(TWEAKS) -d -p 8022:22 -v $(HOMEDIR):/home/$(ME) $(TAG)
+	docker run --rm $(TWEAKS) -d -p 8022:22 -v $(HOMEDIR):/home/$(ME) --name $(CONTAINER) $(TAG)
 
 shell:
 	docker exec -it -u $(ME) $(CONTAINER) zsh
