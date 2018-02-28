@@ -18,7 +18,7 @@ ARG noclean=false
 RUN DEBIAN_FRONTEND=noninteractive \
        apt-get update \
     && apt-get install -y apt-utils \
-    && apt-get install -y ubuntu-server openssh-server locales sudo zsh ${extras} \
+    && apt-get install -y ubuntu-server openssh-server locales sudo zsh man-db ${extras} \
     && apt-get clean \
     && ( ${noclean} || rm -rf /var/lib/apt/lists/* )
 
