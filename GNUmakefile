@@ -6,7 +6,7 @@ HOMEDIR?=`pwd`
 # From https://github.com/solita/docker-systemd/issues/1#issuecomment-218190399
 TWEAKS=--cap-add SYS_ADMIN --security-opt seccomp=unconfined --stop-signal=SIGRTMIN+3 --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro
 
-KEYFILE=home/$(ME)/.ssh/authorized_keys
+KEYFILE=.ssh/authorized_keys
 
 all: run shell
 
@@ -18,6 +18,7 @@ distclean: clean
 	-docker rmi $(TAG)
 
 copy_ssh:
+	mkdir -p `dirname $(KEYFILE)`
 	cp ~/.ssh/id_rsa.pub $(KEYFILE)
 #	cp ~/.ssh/authorized_keys $(KEYFILE)
 #	cp ~/.ssh/id_ed25519.pub $(KEYFILE)
