@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y apt-utils \
     && apt-get install -y ubuntu-server openssh-server locales sudo zsh nano git \
     && apt-get clean \
-    && echo
+    && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 22
 
