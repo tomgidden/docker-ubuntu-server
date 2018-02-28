@@ -12,12 +12,15 @@ COPY etc/debconf.txt /tmp
 
 RUN debconf-set-selections < /tmp/debconf.txt
 
+ARG extras="nano git inetutils-ping binutils autoconf make"
+ARG noclean=false
+
 RUN DEBIAN_FRONTEND=noninteractive \
        apt-get update \
     && apt-get install -y apt-utils \
-    && apt-get install -y ubuntu-server openssh-server locales sudo zsh nano git \
+    && apt-get install -y ubuntu-server openssh-server locales sudo zsh ${extras} \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && ( ${noclean} || rm -rf /var/lib/apt/lists/* )
 
 EXPOSE 22
 
