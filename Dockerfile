@@ -38,6 +38,7 @@ RUN \
     && ( echo "${user}:the.dog.ate.my.homework" | chpasswd ) \
     && adduser ${user} sudo
 
+WORKDIR /home/${user}
 
 VOLUME ["/sys/fs/cgroup", "/tmp", "/run", "/run/lock"]
 
