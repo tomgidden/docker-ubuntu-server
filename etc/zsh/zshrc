@@ -1,0 +1,148 @@
+###########################################################################
+# zshrc file cobbled together from various sources since c.1995
+# Tom Gidden, with lots from Steve Roome
+# REMEMBER TO COMMIT AFTER CHANGES!
+###########################################################################
+
+case $TERM in
+    xterm*)
+        precmd () {print -Pn "\e]0;%n@%m\a"}
+        ;;
+esac
+
+# We're irrevocably damaged by an early lab session in the Maths computer lab
+# circa 1993.
+alias pico=nano
+
+# Colourise stderr
+#exec 2>>(while read line; do
+#   print '\e[91m'${(q)line}'\e[0m' > /dev/tty; done &)
+
+export EDITOR='nano -w'
+export VISUAL=$EDITOR
+
+export GREP_OPTIONS="$GREP_OPTIONS -s --color=auto"
+
+setopt HIST_IGNORE_ALL_DUPS SHARE_HISTORY
+setopt AUTO_MENU EXTENDED_GLOB EXTENDED_HISTORY GLOB GLOB_SUBST
+setopt HIST_IGNORE_DUPS LIST_AMBIGUOUS LIST_BEEP LIST_TYPES LONG_LIST_JOBS
+# setopt MENU_COMPLETE
+
+if ( which less > /dev/null ); then
+  export LESS='-F -R -X -M -w -i -z-2'
+  export PAGER="/usr/bin/less"
+  alias  more='/usr/bin/less'
+  alias  mroe='/usr/bin/less'
+fi
+
+# Steve's magic environment detection
+[[ $ZSH_VERSION > 3 ]] && IS_ZSH_V3=1
+[[ $ZSH_VERSION > 4 ]] && IS_ZSH_V4=1 && unset IS_ZSH_V3
+[[ $ZSH_VERSION > 0 ]] && IS_ZSH=1
+[[ x${OSTYPE} == "x" ]] && OSTYPE=`/usr/bin/uname -s`
+[[ $OSTYPE == sun* || $OSTYPE == solaris* ]] && IS_SOLARIS=1
+[[ $OSTYPE == freebsd* ]] && IS_FREEBSD=1
+[[ $OSTYPE == cygwin*  ]] && IS_CYGWIN=1
+[[ $OSTYPE == linux* ]]  && IS_LINUX=1
+[[ $OSTYPE == darwin* ]] && IS_DARWIN=1
+
+alias pp='ps ax'
+
+# Set up LS to be pretty.
+if ( ls --version 2>/dev/null >/dev/null ) {
+  IS_GNU_LS=1
+  alias ls='ls --color=auto'
+  alias ll='ls -al'
+  alias lr='ls -alrt'
+  alias lart='ls -alrt'
+} else {
+  IS_BSD_LS=1
+  export CLICOLOR=1
+  export LSCOLORS=exgxbxdxcxegedfxfxBxFx
+  alias ls='ls -G'
+  alias ll='ls -Gal'
+  alias lr='ls -Galrt'
+  alias lart='ls -Galrt'
+}
+
+# Steve's dreadful -m breaks multibyte
+bindkey -e  # Emacs mode
+bindkey '\e[5D'  emacs-backward-word
+bindkey '\e[5C'  emacs-forward-word
+bindkey "^Xp" expand-cmd-path
+
+#bindkey "\e[3~" delete-char
+
+# Nice prompt, including user@host, history event and return value.
+if [[ $IS_ZSH_V4 == 1 ]] {
+  PS1=$'%B%n@%m %! %0(?.%?.%{\e[1;31m%}%?%{\e[0m%}) %#%b '
+} else {
+  if [[ $IS_ZSH_V3 == 1 ]] {
+    PS1="$(print '%B%n@%m %! %0(?.%?.%{\e[1;31m%}%?%{\e[0m%}) ') %#%b "
+  }
+}
+
+# [un]setopt will complete with a zsh option.
+compctl -o setopt unsetopt
+
+# Load hostname completion
+autoload -Uz compinit
+compinit -C -d ~/.zcompdump_$ZSH_VERSION
+
+# Anything after nohup, nice, exec, eval or "find ... -exec" is a command
+# by itself with its own completion
+compctl -x 'r[-exec,;]' -l '' -- find
+compctl -l '' nohup exec nice eval sudo
+
+# kill takes signal names as the first argument after -, but job names after %
+compctl -j -P % -x 's[-] p[1]' -k signals -- kill
+
+# Make Mac OS X's 'open -a' match fuzzily, ie. 'phot' => 'Adobe\ Photoshop\ CS'
+zstyle ':completion:*:*:open:*' matcher 'm:{A-Za-z}={a-zA-Z} r: ||[^ ]=**'
+
+# No idea what these do:
+zstyle ':completion:*:default' remote-access
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+
+# Kill completion.  Very handy.
+zstyle ':completion:*:processes' command 'ps x'
+zstyle ':completion:*:*:kill:*' menu yes select
+zstyle ':completion:*:kill:*'   force-list always
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+zstyle ':completion:*' add-space true
+zstyle ':completion:*' completer _expand _complete _prefix
+zstyle ':completion:*' expand prefix suffix
+zstyle ':completion:*' max-errors 0
+
+# Remove unused completions
+zstyle ':completion:*:functions' ignored-patterns '_*'
+
+# Remove slashes. Compare and contrast with AUTO_REMOVE_SLASH
+zstyle ':completion:*' squeeze-slashes true
+
+# Useful global aliases.  From: http://grml.org/zsh/zsh-lovers.html
+#alias -g ...='../..'
+#alias -g ....='../../..'
+#alias -g .....='../../../..'
+#alias -g D="DISPLAY=:0.0"
+#alias -g ED="export DISPLAY=:0.0"
+#alias -g H='| head'
+#alias -g NE="2> /dev/null"
+alias -g NUL="> /dev/null 2>&1"
+#alias -g PIPE='|'
+#alias -g TF='| tail -f'
+
+## This is really cool, but if the network's down and NFS is blocking, it's serious trouble
+## if _that_ is what you're logging in to fix...
+##
+#if [[ -d /usr/share/zsh-syntax-highlighting ]]; then
+#    source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#elif [[ -d /usr/local/share/zsh-syntax-highlighting ]]; then
+#    source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#fi
+
+true
+
+
